@@ -1,32 +1,30 @@
-```txt
+## 介绍
+
+这是一个使用cloudflare workers 和 d1 数据库的worker项目，采用hono框架构建的简单示例。
+
+## 本地运行
+
+
+先安装依赖
+```shell
 npm install
-npm run dev
 ```
 
-```txt
-npm run deploy
-```
-
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
-
-```txt
-npm run cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
-# 初始化表结构
-
+然后建立表结构
 ```sh
-npx wrangler d1 execute test-db --local --command "
+wrangler d1 execute test-db --local --command "
 CREATE TABLE IF NOT EXISTS visits (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   visited_at TEXT
 );
 "
+```
 
+启动本地服务
+```shell
+wrangler dev
+```
+## 部署到 Cloudflare Workers
+```shell
+wrangler deploy
 ```
