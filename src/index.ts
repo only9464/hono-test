@@ -13,8 +13,16 @@ const visits = sqliteTable('visits', {
   visitedAt: text('visited_at').notNull(),
 })
 
+type Bindings = {
+  // MY_BUCKET: R2Bucket
+  // USERNAME: string
+  // PASSWORD: string
+  SECRET_KEY: string
+  DB: D1Database
+}
 
-const app = new Hono<{ Bindings: { DB: D1Database } }>()
+const app = new Hono<{ Bindings: Bindings }>()
+// const app = new Hono<{ Bindings: { DB: D1Database } }>()
 
 // 根路由：访问时写入访问时间
 app.get('/', async (c) => {
@@ -54,7 +62,7 @@ app.post('/login', async (c) => {
 
   // 生成 JWT
   const exp = Math.floor(Date.now() / 1000) + 60 * 60
-  const token = await sign({ user: username, exp }, 'my-secret', 'HS256')
+  const token = await sign({ user: username, exp },c.env.SECRET_KEY, 'HS256')
 
   // 设置 httpOnly Cookie
   setCookie(c, 'auth', token, {
@@ -81,7 +89,7 @@ app.use('/protected/*', async (c, next) => {
   if (!token) return c.json({ error: 'Unauthorized' }, 401)
 
   try {
-    const payload = await verify(token, 'my-secret', 'HS256')
+    const payload = await verify(token, c.env.SECRET_KEY, 'HS256')
     c.set('jwtPayload', payload)
     await next()
   } catch {
